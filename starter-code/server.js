@@ -6,7 +6,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const PORT = process.env.PORT || 3000;
 const app = express();
-const conString = process.env.DATABASE_URL || 'postgres://localhost:5432';
+const conString = process.env.DATABASE_URL || 'postgres://postgres:bobistheshit@localhost:5432/bwork';
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));

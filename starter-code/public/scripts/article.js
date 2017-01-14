@@ -1,124 +1,137 @@
 'use strict';
+(function(module){
 
-// REVIEW: Check out all of the functions that we've cleaned up with arrow function syntax.
+  // REVIEW: Check out all of the functions that we've cleaned up with arrow function syntax.
 
-// TODO: Wrap the entire contents of this file in an IIFE.
-// Pass in to the IIFE a module, upon which objects can be attached for later access.
+  // DONE: Wrap the entire contents of this file in an IIFE.
+  // Pass in to the IIFE a module, upon which objects can be attached for later access.
 
-function Article(opts) {
-  // REVIEW: Lets review what's actually happening here, and check out some new syntax!!
-  Object.keys(opts).forEach(e => this[e] = opts[e]);
-}
+  function Article(opts) {
+    // REVIEW: Lets review what's actually happening here, and check out some new syntax!!
+    Object.keys(opts).forEach(e => this[e] = opts[e]);
+  }
 
-Article.all = [];
+  Article.all = [];
 
-Article.prototype.toHtml = function() {
-  var template = Handlebars.compile($('#article-template').text());
+  Article.prototype.toHtml = function() {
+    var template = Handlebars.compile($('#article-template').text());
 
-  this.daysAgo = parseInt((new Date() - new Date(this.publishedOn))/60/60/24/1000);
-  this.publishStatus = this.publishedOn ? `published ${this.daysAgo} days ago` : '(draft)';
-  this.body = marked(this.body);
+    this.daysAgo = parseInt((new Date() - new Date(this.publishedOn))/60/60/24/1000);
+    this.publishStatus = this.publishedOn ? `published ${this.daysAgo} days ago` : '(draft)';
+    this.body = marked(this.body);
 
-  return template(this);
-};
+    return template(this);
+  };
 
-Article.loadAll = rows => {
-  rows.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)));
+  Article.loadAll = rows => {
+    rows.sort((a,b) => (new Date(b.publishedOn)) - (new Date(a.publishedOn)));
+    // DONE: Refactor this forEach code, by using a `.map` call instead, since want we are trying to accomplish
+    // is the transformation of one colleciton into another.
 
-  // TODO: Refactor this forEach code, by using a `.map` call instead, since want we are trying to accomplish
-  // is the transformation of one colleciton into another.
-
+    Article.all = rows.map(row => new Article(row));
   /* OLD forEach():
     rawData.forEach(function(ele) {
     Article.all.push(new Article(ele));
   });
   */
 
-};
+  };
 
-Article.fetchAll = callback => {
-  $.get('/articles/all')
-  .then(
-    results => {
-      if (results.rows.length) {
-        Article.loadAll(results.rows);
-        callback();
-      } else {
-        $.getJSON('./data/hackerIpsum.json')
-        .then(rawData => {
-          rawData.forEach(item => {
-            let article = new Article(item);
-            article.insertRecord();
+  Article.fetchAll = callback => {
+    $.get('/articles/all')
+    .then(
+      results => {
+        if (results.rows.length) {
+          Article.loadAll(results.rows);
+          callback();
+        } else {
+          $.getJSON('./data/hackerIpsum.json')
+          .then(rawData => {
+            rawData.forEach(item => {
+              let article = new Article(item);
+              article.insertRecord();
+            })
           })
-        })
-        .then(() => Article.fetchAll(callback))
-        .catch(console.error);
+          .then(() => Article.fetchAll(callback))
+          .catch(console.error);
+        }
       }
-    }
-  )
-};
+    )
+  };
 
-// TODO: Chain together a `map` and a `reduce` call to get a rough count of all words in all articles.
-Article.numWordsAll = () => {
-  return Article.all.map().reduce()
-};
+  // DONE: Chain together a `map` and a `reduce` call to get a rough count of all words in all articles.
+  Article.numWordsAll = () => {
+    return Article.all.map(function(elem) {
+      return elem.body.split(' ').length;
+    })
+    .reduce(function(a, b){
+      // console.log(a + b, 'logging a+b');
+      return a + b;
+    })
+  };
 
-// TODO: Chain together a `map` and a `reduce` call to produce an array of unique author names.
-Article.allAuthors = () => {
-  return Article.all.map().reduce();
-};
+  // TODO: Chain together a `map` and a `reduce` call to produce an array of unique author names.
+  Article.allAuthors = () => {
+    return Article.all.map(function(elem) {
+      return elem.author;
+    }).reduce(function(a, b){
+      return
+    });
+  };
 
-Article.numWordsByAuthor = () => {
-  return Article.allAuthors().map(author => {
-    // TODO: Transform each author string into an object with properties for
-    // the author's name, as well as the total number of words across all articles
-    // written by the specified author.
-    return {
-      name: , // TODO: Complete the value for this object property
-      numWords: Article.all.filter().map().reduce() // TODO: Complete these three FP methods.
-    }
-  })
-};
+  Article.numWordsByAuthor = () => {
+    return Article.allAuthors().map(author => {
+      // TODO: Transform each author string into an object with properties for
+      // the author's name, as well as the total number of words across all articles
+      // written by the specified author.
+      return {
+        // name: , // TODO: Complete the value for this object property
+        numWords: Article.all.filter().map().reduce() // TODO: Complete these three FP methods.
+      }
+    })
+  };
 
-Article.truncateTable = callback => {
-  $.ajax({
-    url: '/articles/truncate',
-    method: 'DELETE',
-  })
-  .then(console.log) // REVIEW: Check out this clean syntax for just passing 'assumend' data into a named function!
-  .then(callback);
-};
+  Article.truncateTable = callback => {
+    $.ajax({
+      url: '/articles/truncate',
+      method: 'DELETE',
+    })
+    .then(console.log) // REVIEW: Check out this clean syntax for just passing 'assumend' data into a named function!
+    .then(callback);
+  };
 
-Article.prototype.insertRecord = function(callback) {
-  // REVIEW: Why can't we use an arrow function here for .insertRecord()??
-  $.post('/articles/insert', {author: this.author, authorUrl: this.authorUrl, body: this.body, category: this.category, publishedOn: this.publishedOn, title: this.title})
-  .then(console.log)
-  .then(callback);
-};
+  Article.prototype.insertRecord = function(callback) {
+    // REVIEW: Why can't we use an arrow function here for .insertRecord()??
+    $.post('/articles/insert', {author: this.author, authorUrl: this.authorUrl, body: this.body, category: this.category, publishedOn: this.publishedOn, title: this.title})
+    .then(console.log)
+    .then(callback);
+  };
 
-Article.prototype.deleteRecord = function(callback) {
-  $.ajax({
-    url: '/articles/delete',
-    method: 'DELETE',
-    data: {id: this.article_id}
-  })
-  .then(console.log)
-  .then(callback);
-};
-
-Article.prototype.updateRecord = function(callback) {
-  $.ajax({
-    url: '/articles/delete',
-    method: 'DELETE',
-    data: {
-      author: this.author,
-      authorUrl: this.authorUrl,
-      body: this.body,
-      category: this.category,
-      publishedOn: this.publishedOn,
-      title: this.title,
-      id: this.article_id}
+  Article.prototype.deleteRecord = function(callback) {
+    $.ajax({
+      url: '/articles/delete',
+      method: 'DELETE',
+      data: {id: this.article_id}
     })
     .then(console.log)
     .then(callback);
   };
+
+  Article.prototype.updateRecord = function(callback) {
+    $.ajax({
+      url: '/articles/update',
+      method: 'PUT',
+      data: {
+        author: this.author,
+        authorUrl: this.authorUrl,
+        body: this.body,
+        category: this.category,
+        publishedOn: this.publishedOn,
+        title: this.title,
+        id: this.article_id}
+    })
+      .then(console.log)
+      .then(callback);
+  };
+  module.Article = Article;
+}(window));
