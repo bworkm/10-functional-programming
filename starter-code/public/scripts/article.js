@@ -72,7 +72,11 @@
 
   // TODO: Chain together a `map` and a `reduce` call to produce an array of unique author names.
   Article.allAuthors = () => {
-    return Article.all.map().reduce();
+    return Article.all.map(function(elem) {
+      return elem.author;
+    }).reduce(function(a, b){
+      return
+    });
   };
 
   Article.numWordsByAuthor = () => {
@@ -115,8 +119,8 @@
 
   Article.prototype.updateRecord = function(callback) {
     $.ajax({
-      url: '/articles/delete',
-      method: 'DELETE',
+      url: '/articles/update',
+      method: 'PUT',
       data: {
         author: this.author,
         authorUrl: this.authorUrl,
