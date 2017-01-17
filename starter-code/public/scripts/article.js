@@ -77,8 +77,10 @@
     })
     .filter(function(elem, index, self) {
       return (index === self.indexOf(elem));
+    })
+    .reduce(function(a, b){
+      return a + b;
     });
-    // .reduce();
   };
 
   Article.numWordsByAuthor = () => {
@@ -131,8 +133,8 @@
 
   Article.prototype.updateRecord = function(callback) {
     $.ajax({
-      url: '/articles/delete',
-      method: 'DELETE',
+      url: '/articles/update',
+      method: 'PUT',
       data: {
         author: this.author,
         authorUrl: this.authorUrl,
