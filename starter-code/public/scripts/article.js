@@ -86,9 +86,19 @@
       // TODO: Transform each author string into an object with properties for
       // the author's name, as well as the total number of words across all articles
       // written by the specified author.
+      // console.log(author, 'author');
       return {
-        // name: , // TODO: Complete the value for this object property
-        numWords: Article.all.filter().map().reduce() // TODO: Complete these three FP methods.
+        name: author, // TODO: Complete the value for this object property
+        numWords: Article.all
+        .filter(function(elem) {
+          return (elem.author === author);
+        })
+        .map(function(elem) {
+          return elem.body.split(' ').length;
+        })
+        .reduce(function(a, b) {
+          return a + b;
+        }, 0) // TODO: Complete these three FP methods.
       }
     })
   };
